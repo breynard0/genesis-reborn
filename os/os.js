@@ -1,6 +1,9 @@
 // written by guac in august 2026.
 "use strict";
 
+// number of [rows, columns] for the desktop grid
+const desktopGrid = [];
+
 async function main() {
     console.log("booting up genesis...")
 
@@ -35,7 +38,7 @@ async function main() {
 
     let windowManager = new WindowManager(manifest["options"]["windowManager"]);
     let appManager = new ApplicationManager(windowManager);
-    
+    let desktopManager = new DesktopManager(desktop)
 
     for (let i = 0; i < manifest["applications"].length; i++) {
         let application = manifest["applications"][i]
@@ -55,6 +58,7 @@ async function main() {
         eyeDialog.showPopover();
     })
     document.getElementById("about-trigger").addEventListener("click", () => {})
+    document.getElementById("shutdown-trigger").addEventListener("click", () => { shutdown(); })
     loadingOverlay.remove();
 }
 
@@ -99,6 +103,8 @@ async function shutdown() {
     shutdownOverlay.classList.add("activated");
     setTimeout(() => {
         shutdownText.innerText = "thanks for being here."
+        shutdownText.classList.add("activated");
+        setTimeout(() => { window.close() }, 500);
     }, 600)
 }
 
@@ -180,6 +186,21 @@ class WindowManager {
     }
     closeWindow(id) {
         this.#windowList.remove()
+    }
+}
+
+class DesktopManager {
+    #grid;
+    constructor() {
+        this.#grid = document.getElementById("desktop-grid");
+    }
+    populate(OSapp) {
+        if (typeof OSapp != OSApplication) {
+            console.error("desktop manager was asked to populate a non-application");
+            return;
+        }
+        let tileElement = document.createElement("div");
+        tileElement.classList.add("desktopTile")
     }
 }
 

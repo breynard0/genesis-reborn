@@ -158,6 +158,12 @@ body {
 #shutdownOverlay p {
     color: white;
     font-family: monospace;
+    opacity: 0%;
+    transition: opacity 500ms;
+}
+
+#shutdownOverlay p.activated {
+    opacity: 100%;
 }
 
 #shutdownOverlay.activated {
@@ -214,6 +220,9 @@ body {
     flex: 0 1 auto;
     flex-basis: 18%;
 }
+
+/* windows and related styling! */
+
 .window {
     display: flex;
     flex-direction: column;
@@ -270,3 +279,14 @@ body {
     height: 100%;
 }
 
+/* desktop and its grid */
+
+.desktop-grid {
+    display: grid;
+    gap: 2%;
+        
+}
+
+.desktopTile {
+
+}

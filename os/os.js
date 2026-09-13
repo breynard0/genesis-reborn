@@ -2,7 +2,8 @@
 "use strict";
 
 // number of [rows, columns] for the desktop grid
-const desktopGrid = [];
+const desktopCols = 8;
+const desktopRows = 4;
 
 async function main() {
     console.log("booting up genesis...")
@@ -190,17 +191,30 @@ class WindowManager {
 }
 
 class DesktopManager {
-    #grid;
+    #grid;          // 2D array: string[rows][cols]  
+    #nextPos;       // int tuple, tracks the next position to be populated
+    #gridElement;   // pointer to the actual DOM element
     constructor() {
-        this.#grid = document.getElementById("desktop-grid");
+        // initialize our 2D array for managing the desktop
+        // grid = string[rows][cols], where each index has the application name
+        this.#grid = new Array(desktopRows);
+        for (let i = 0; i < this.#grid.length; i++) {
+            this.#grid[i] = new Array(desktopCols)
+        }
+        this.#nextPos = [0, 0];
+        this.#gridElement = document.getElementById("desktop-grid");
+        this.#gridElement.style.gridTemplateColumns = `repeat(${desktopCols},1fr)`
+        this.#gridElement.style.gridTemplateRows = `repeat(${desktopRows}, 1fr)`
     }
     populate(OSapp) {
         if (typeof OSapp != OSApplication) {
             console.error("desktop manager was asked to populate a non-application");
             return;
         }
+        
         let tileElement = document.createElement("div");
         tileElement.classList.add("desktopTile")
+        tileElement.id = `tile-${OSapp.getId()}`
     }
 }
 
@@ -300,7 +314,7 @@ class OSWindow {
         if (this.#visible) { return; } // no need to do anything
         // otherwise, change it to true and trigger a CSS realignment
         this.#visible = true;
-        this.alignCSS()
+        this.alignCSS();
     }
     // quick utility function to set the CSS of our HTML element to align with the values set here
     alignCSS() {
@@ -312,7 +326,7 @@ class OSWindow {
         this.#visible ? this.#element.style.display = "block" : this.#element.style.display = "hidden";
     }
     setPosition(x, y) {
-        this.#position = [x, y];
+        this.#position = [x, y];``
     }
     // used by the WindowManager to assign new z-indexes to windows
     setLayer(z) {
@@ -351,9 +365,14 @@ class OSApplication {
     }
 
     // standard getters
+    getID() {
+        return this.#id;
+    }
+
     getTitle() {
         return this.#title;
     }
+    
     getIcon(){
         return this.#iconurl;
     }

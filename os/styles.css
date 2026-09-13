@@ -205,10 +205,13 @@ body {
         bottom: anchor(top);
         left: anchor(right);
     }
+    width: fit-content;
 }
 
 #eyedialog p {
-
+    color: white;
+    width: fit-content;
+    padding: 0.5em 0.75em;
 }
 
 #tabcontainer {

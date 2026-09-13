@@ -1,7 +1,7 @@
 // written by guac in august 2026.
 "use strict";
 
-// number of [rows, columns] for the desktop grid
+// number of [rows, columns] for the desktop grid - consts now, may be responsively computed (or adjusted in settings!) later
 const desktopCols = 8;
 const desktopRows = 4;
 
@@ -49,6 +49,7 @@ async function main() {
             console.error("failed to load application data from manifest: " + e.message)
         }
     }
+    appManager.populateDesktop(desktopManager);
 
     let eyeButton = document.getElementById("eyebutton");
     let eyeDialog = document.getElementById("eyedialog");
@@ -93,6 +94,11 @@ async function loadError(reason) {
     errorPopup("loading error:", reason);
 }
 
+async function desktopOverflowError() {
+    console.error("hey dumbass, desktop overflowed");
+    errorPopup("desktop overflowed!! either you have too many apps or you ran some dumb script");
+}
+
 // trigger the shutdown animation and then close the tab!
 async function shutdown() {
     let shutdownOverlay = document.createElement("div");
@@ -126,6 +132,7 @@ class ApplicationManager {
         // these expected fields can be empty, they just can't be missing
         this.#expectedFields = ["title", "iconurl", "appSource", "tooltip", "options"]
     }
+    // takes the data for an application supplied in the JSON manifest and loads it into an OSApplication stored in the list!
     loadApp(applicationData) {
         for (let i = 0; i < this.#expectedFields.length; i++) {
             let field = this.#expectedFields[i]
@@ -141,7 +148,15 @@ class ApplicationManager {
         return newApp;
     }
     unloadApp(appID) {
+        // should be all we need to do? may need review later
+        // oh wait it needs to close relevant windows and remove the desktop tile as well
         delete object[appID]
+    }
+    populateDesktop(desktopManager) {
+        // provides the DesktopManager with all the relevant application data it needs to populate the desktop
+        Object.entries(this.#applicationList).forEach((app) => {
+            desktopManager.populate(app[1]);
+        })
     }
 }
 
@@ -211,15 +226,51 @@ class DesktopManager {
         this.#gridElement.style.gridTemplateColumns = `repeat(${desktopCols},1fr)`
         this.#gridElement.style.gridTemplateRows = `repeat(${desktopRows}, 1fr)`
     }
+
+    #moveNext() {
+        let currentX = this.#nextPos[0];
+        let currentY = this.#nextPos[1];
+        if (currentX < desktopCols) {
+            currentX++;
+            this.#nextPos = [currentX, currentY];
+        } else if (currentY > desktopRows) {
+            currentX = 0;
+            currentY++;
+            this.#nextPos = [currentX, currentY];
+        } else {
+            // overflow behavior: throw an error 
+            throw new Error("Desktop overflow");
+        }
+    }
+
     populate(OSapp) {
         if (typeof OSapp != OSApplication) {
             console.error("desktop manager was asked to populate a non-application");
             return;
         }
-        
+        // set its value in the grid!
+        let nextX = this.#nextPos[0];
+        let nextY = this.#nextPos[1];
+        this.#grid[nextY][nextX] = OSapp.getTitle();
+        this.#moveNext()
+
+        // create and configure the relevant DOM element
         let tileElement = document.createElement("div");
+        let tileImg = document.createElement("img");
+        tileImg.classList.add("tile-img");
+        let tileText = document.createElement("p");
+        tileText.classList.add("tile-text");
+        tileElement.appendChild(tileImg);
+        tileElement.appendChild(tileText);
+        // our grid object is zero-indexed, but the DOM one isn't
+        tileImg.style.gridRow = `${nextX + 1}`;
+        tileImg.style.gridColumn = `${nextY + 1}`;
         tileElement.classList.add("desktopTile")
-        tileElement.id = `tile-${OSapp.getId()}`
+
+        tileElement.id = `tile-${OSapp.getId()}`;
+        
+
+        this.#gridElement.appendChild(tileElement);
     }
 }
 
@@ -370,7 +421,7 @@ class OSApplication {
     }
 
     // standard getters
-    getID() {
+    getId() {
         return this.#id;
     }
 

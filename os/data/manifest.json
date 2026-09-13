@@ -22,6 +22,14 @@
           }
         }
       }
+    },
+    {
+      "title": "About",
+      "iconurl": "assets/about-icon.png",
+      "appSource": "apps/about.html",
+      "tooltip": "learn about genesis!",
+      "options": {},
+      "styles": {}
     }
   ],
   "options": {

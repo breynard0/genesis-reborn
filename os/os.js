@@ -101,12 +101,17 @@ async function shutdown() {
     shutdownOverlay.appendChild(shutdownText);
     document.body.appendChild(shutdownOverlay);
     // add the activated class to trigger the CSS transition that makes it blanket the screen
-    shutdownOverlay.classList.add("activated");
-    setTimeout(() => {
-        shutdownText.innerText = "thanks for being here."
-        shutdownText.classList.add("activated");
-        setTimeout(() => { window.close() }, 500);
-    }, 600)
+    shutdownOverlay.offsetHeight;
+    // wrap it in requestAnimationFrame to make sure it properly flows and doesn't get insta-executed
+    requestAnimationFrame(() => {
+        shutdownOverlay.classList.add("activated");
+        setTimeout(() => {
+            shutdownText.innerText = "thanks for being here.\n\n\n\nps: this would have closed the window but that's not possible in javascript anymore lol"
+            shutdownText.classList.add("activated");
+            // lol this used to be window.close() but that's not a thing anymore :broken_heart:
+        }, 600)
+    })
+    
 }
 
 class ApplicationManager {
@@ -372,7 +377,7 @@ class OSApplication {
     getTitle() {
         return this.#title;
     }
-    
+
     getIcon(){
         return this.#iconurl;
     }

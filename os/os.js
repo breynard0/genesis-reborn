@@ -130,7 +130,7 @@ class ApplicationManager {
         this.#numberApplications = 0;
         this.#applicationList = {};
         // these expected fields can be empty, they just can't be missing
-        this.#expectedFields = ["title", "iconurl", "appSource", "tooltip", "options"]
+        this.#expectedFields = ["title", "iconurl", "appSource", "tooltip", "options", "styles"]
     }
     // takes the data for an application supplied in the JSON manifest and loads it into an OSApplication stored in the list!
     loadApp(applicationData) {
@@ -143,7 +143,7 @@ class ApplicationManager {
         this.#numberApplications++;
         // precompute so we can pass it to the constructor and use it for assignment
         let newAppID = this.#numberApplications.toString();
-        let newApp = new OSApplication(this.#windowManager, newAppID, applicationData.title, applicationData.iconurl, applicationData.tooltip, applicationData.options, applicationData.styles)
+        let newApp = new OSApplication(this.#windowManager, newAppID, applicationData.title, applicationData.iconurl, applicationData.appSource, applicationData.tooltip, applicationData.options, applicationData.styles)
         this.#applicationList[newAppID] = newApp;
         return newApp;
     }
@@ -192,7 +192,8 @@ class WindowManager {
         console.debug(`WM: ${app.getTitle()} attempting to acquire window`)
         this.#numberWindows += 1;
         let titleHash = await crypto.subtle.digest("SHA-256", (new TextEncoder).encode(app.getTitle()))
-        let windowID = (new TextDecoder).decode(titleHash).slice(0, 7) + "-" + (this.#numberWindows).toString()
+        let titleHashHex = Array.from(new Uint8Array(titleHash)).map(b => b.toString(16).padStart(2, "0")).join("")
+        let windowID = titleHashHex.slice(0, 7) + "-" + (this.#numberWindows).toString()
         console.debug(`WM: ${app.getTitle()} got window ID ${windowID}`)
         let defaultWidth = this.#globalDefaultWidth;
         let defaultHeight = this.#globalDefaultHeight;
@@ -202,7 +203,7 @@ class WindowManager {
         this.#highestZ++;
         let startingZ = this.#highestZ;
         console.debug(`WM: Building window ${windowID} with width ${defaultWidth} and height ${defaultHeight}, starting z-index is ${startingZ}`)
-        let newWindow = new OSWindow(this, windowID, defaultWidth, defaultHeight, startingZ, window.innerWidth / 3, window.innerHeight / 3);
+        let newWindow = new OSWindow(this, windowID, defaultWidth, defaultHeight, startingZ, app.getStyles(), window.innerWidth / 3, window.innerHeight / 3);
         this.#windowList.set(windowID, newWindow);
         return newWindow;
     }
@@ -248,6 +249,7 @@ class DesktopManager {
     }
 
     populate(OSapp, windowManager) {
+        // the closest thing we can do to a type check in stupid normal JavaScript
         try {
             OSapp.getTitle();
         } catch (TypeError) {
@@ -280,7 +282,7 @@ class DesktopManager {
 
         tileElement.addEventListener("dblclick", () => {
             console.debug(`DESKTOP: ${OSapp.getTitle()} double clicked, window should open`);
-            OSapp.registerWindow(windowManager)
+            OSapp.openWindow(0);
         })
 
         this.#gridElement.appendChild(tileElement);
@@ -307,6 +309,7 @@ class OSWindow {
         this.#zIndex = startingZ
         this.#styles = styles;
         this.setPosition(x, y);
+        this.createElement();
     }
 
     // creates, styles, and organizes the relevant DOM element for this logical window, based on the manifest for the application.
@@ -399,15 +402,16 @@ class OSWindow {
     // quick utility function to set the CSS of our HTML element to align with the values set here
     alignCSS() {
         console.debug(`WINDOW ${this.#id}: aligning CSS`)
-        this.#element.style.width = this.#width;
-        this.#element.style.height = this.#height;
-        this.#element.style.left = this.#position[0];
-        this.#element.style.top = this.#position[1];
+        this.#element.style.position = "fixed";
+        this.#element.style.width = `${this.#width}px`;
+        this.#element.style.height = `${this.#height}px`;
+        this.#element.style.left = `${this.#position[0]}px`;
+        this.#element.style.top = `${this.#position[1]}px`;
         this.#element.style.zIndex = this.#zIndex;
-        this.#visible ? this.#element.style.display = "block" : this.#element.style.display = "hidden";
+        this.#visible ? this.#element.style.display = "block" : this.#element.style.display = "none";
     }
     setPosition(x, y) {
-        this.#position = [x, y];``
+        this.#position = [x, y];
     }
     // used by the WindowManager to assign new z-indexes to windows
     setLayer(z) {
@@ -435,11 +439,11 @@ class OSApplication {
     #styles; // an optional styles object defining custom CSS for this app's windows
     #linkedWindows; // a list of window IDs provided by the WindowManager
 
-    static numOpen;
-    constructor(windowManager, id, title, iconurl, tooltip, options, styles) {
+    constructor(windowManager, id, title, iconurl, appSource, tooltip, options, styles) {
         this.#id = id;
         this.#title = title; 
         this.#iconurl = iconurl;
+        this.#appSource = appSource;
         this.#tooltip = tooltip;
         this.#options = options;
         this.#styles = styles
@@ -460,6 +464,9 @@ class OSApplication {
         return this.#iconurl;
     }
 
+    getTooltip() { return this.#tooltip; }
+
+
     getOption(optionName) {
         // returns undefined if an option is not set!
         return this.#options[optionName] 
@@ -471,9 +478,11 @@ class OSApplication {
     }
 
     async registerWindow(windowManager) {
+        console.debug(`APP${this.#id}: registering new window`)
         this.#linkedWindows.push(await windowManager.acquireWindow(this))
     }
     async openWindow(index) {
+        console.debug(`APP${this.#id}: opening window ${index}`)
         this.#linkedWindows[index].open();
     }
     

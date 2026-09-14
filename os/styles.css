@@ -317,6 +317,7 @@ body {
     align-self: center;
     font-style: italic;
     color: white;
-    background-color: rgba(0,0,0, 0.3);
+    background-color: rgba(0,0,0, 0.5);
     font-family: monospace;
+    font-size: 1.25em;
 }

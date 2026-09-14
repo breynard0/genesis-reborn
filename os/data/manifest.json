@@ -6,8 +6,8 @@
       "appSource": "apps/wormhole.html",
       "tooltip": "",
       "options": {
-        "defaultHeight": 300,
-        "defaultWidth": 500,
+        "defaultHeight": 200,
+        "defaultWidth": 400,
         "tileOnDesktop": true,
         "quitOnClose": false
       },

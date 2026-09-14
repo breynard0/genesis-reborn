@@ -231,13 +231,14 @@ body {
     display: flex;
     flex-direction: column;
     border-radius: 4px;
-    background: rgb(113, 112, 112);
+    background: linear-gradient(0deg, rgba(255, 255, 255, 1) 0%, rgba(189, 175, 175, 1) 64%, rgba(64, 57, 57, 1) 100%);   
     
 }
 .windowBar {
     display: flex;
     flex-direction: row;
-    justify-items: flex-end;
+    height: 10%;
+    justify-content: flex-end;
     align-items: center;
     background: rgb(70, 70, 70);
 }
@@ -250,7 +251,6 @@ body {
 }
 
 .windowBar .minButton {
-    content: "_";
     font-family: monospace;
     height: 80%;
     margin-top: 10%;
@@ -258,7 +258,6 @@ body {
 }
 
 .windowBar .closeButton {
-    content: "X";
     font-family: monospace;
     height: 80%;
     margin-top: 10%;
@@ -267,7 +266,6 @@ body {
 }
 
 .windowBar .maxButton {
-    content: "O";
     font-family: monospace;
     height: 80%;
     margin-top: 10%;
@@ -309,8 +307,8 @@ body {
 .desktopTile {
     display: flex;
     flex-direction: column;
-    align-items: center; /* gotta remember that column flips justify and align */
-    justify-items: stretch;
+    align-content: center; /* gotta remember that column flips justify and align */
+    justify-content: center;
     /* position in the grid is computed by DesktopManager in os.js */
 }
 

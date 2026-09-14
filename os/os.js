@@ -49,7 +49,7 @@ async function main() {
             console.error("failed to load application data from manifest: " + e.message)
         }
     }
-    appManager.populateDesktop(desktopManager, windowManager);
+    appManager.populateDesktop(desktopManager);
 
     let eyeButton = document.getElementById("eyebutton");
     let eyeDialog = document.getElementById("eyedialog");
@@ -152,11 +152,11 @@ class ApplicationManager {
         // oh wait it needs to close relevant windows and remove the desktop tile as well
         delete object[appID]
     }
-    populateDesktop(desktopManager, windowManager) {
+    populateDesktop(desktopManager) {
         // provides the DesktopManager with all the relevant application data it needs to populate the desktop
         Object.entries(this.#applicationList).forEach((app) => {
             console.debug(`app is type: ${typeof app}`)
-            desktopManager.populate(app[1], windowManager);
+            desktopManager.populate(app[1]);
         })
     }
 }
@@ -248,7 +248,7 @@ class DesktopManager {
         }
     }
 
-    populate(OSapp, windowManager) {
+    populate(OSapp) {
         // the closest thing we can do to a type check in stupid normal JavaScript
         try {
             OSapp.getTitle();
@@ -305,6 +305,7 @@ class OSWindow {
     constructor(windowManager, id, title, width, height, startingZ, styles, x, y) {
         this.#windowManager = windowManager
         this.#id = id;
+        this.#title = title;
         this.#width = width; // windowmanager will default this if it's not provided
         this.#height = height;
         this.#zIndex = startingZ

@@ -49,7 +49,7 @@ async function main() {
             console.error("failed to load application data from manifest: " + e.message)
         }
     }
-    appManager.populateDesktop(desktopManager);
+    appManager.populateDesktop(desktopManager, windowManager);
 
     let eyeButton = document.getElementById("eyebutton");
     let eyeDialog = document.getElementById("eyedialog");
@@ -152,10 +152,11 @@ class ApplicationManager {
         // oh wait it needs to close relevant windows and remove the desktop tile as well
         delete object[appID]
     }
-    populateDesktop(desktopManager) {
+    populateDesktop(desktopManager, windowManager) {
         // provides the DesktopManager with all the relevant application data it needs to populate the desktop
         Object.entries(this.#applicationList).forEach((app) => {
-            desktopManager.populate(app[1]);
+            console.debug(`app is type: ${typeof app}`)
+            desktopManager.populate(app[1], windowManager);
         })
     }
 }
@@ -177,7 +178,7 @@ class WindowManager {
         this.#highestZ = 10; // to provide a little bit of allowance for elements behind and underneath
     }
     getWindows() {
-        return this.windowList
+        return this.#windowList
     }
     getNumOpen() {
         return this.#numberWindows;
@@ -188,9 +189,11 @@ class WindowManager {
     }
     // used by applications to reserve a window from the window manager - they're then made visible with openWindow
     async acquireWindow(app) {
+        console.debug(`WM: ${app.getTitle()} attempting to acquire window`)
         this.#numberWindows += 1;
         let titleHash = await crypto.subtle.digest("SHA-256", (new TextEncoder).encode(app.getTitle()))
         let windowID = (new TextDecoder).decode(titleHash).slice(0, 7) + "-" + (this.#numberWindows).toString()
+        console.debug(`WM: ${app.getTitle()} got window ID ${windowID}`)
         let defaultWidth = this.#globalDefaultWidth;
         let defaultHeight = this.#globalDefaultHeight;
         // if the application specifies default dimensions, use those
@@ -198,6 +201,7 @@ class WindowManager {
         if (app.getOption("defaultHeight") != undefined) { defaultHeight = app.getOption("defaultHeight"); }
         this.#highestZ++;
         let startingZ = this.#highestZ;
+        console.debug(`WM: Building window ${windowID} with width ${defaultWidth} and height ${defaultHeight}, starting z-index is ${startingZ}`)
         let newWindow = new OSWindow(this, windowID, defaultWidth, defaultHeight, startingZ, window.innerWidth / 3, window.innerHeight / 3);
         this.#windowList.set(windowID, newWindow);
         return newWindow;
@@ -243,11 +247,14 @@ class DesktopManager {
         }
     }
 
-    populate(OSapp) {
-        if (typeof OSapp != OSApplication) {
+    populate(OSapp, windowManager) {
+        try {
+            OSapp.getTitle();
+        } catch (TypeError) {
             console.error("desktop manager was asked to populate a non-application");
             return;
         }
+        
         // set its value in the grid!
         let nextX = this.#nextPos[0];
         let nextY = this.#nextPos[1];
@@ -259,18 +266,25 @@ class DesktopManager {
         let tileImg = document.createElement("img");
         tileImg.classList.add("tile-img");
         let tileText = document.createElement("p");
+        tileText.innerText = OSapp.getTitle()
         tileText.classList.add("tile-text");
         tileElement.appendChild(tileImg);
         tileElement.appendChild(tileText);
         // our grid object is zero-indexed, but the DOM one isn't
         tileImg.style.gridRow = `${nextX + 1}`;
         tileImg.style.gridColumn = `${nextY + 1}`;
+        tileImg.src = OSapp.getIcon();
         tileElement.classList.add("desktopTile")
 
         tileElement.id = `tile-${OSapp.getId()}`;
-        
+
+        tileElement.addEventListener("dblclick", () => {
+            console.debug(`DESKTOP: ${OSapp.getTitle()} double clicked, window should open`);
+            OSapp.registerWindow(windowManager)
+        })
 
         this.#gridElement.appendChild(tileElement);
+        
     }
 }
 
@@ -364,6 +378,11 @@ class OSWindow {
                 }
             }
         }
+        // new windows default to being invisible until opened
+        this.#element = windowDiv;
+        this.#visible = false;
+        this.alignCSS();
+        document.getElementById("desktop").appendChild(this.#element);
     }
 
     open() {
@@ -372,8 +391,14 @@ class OSWindow {
         this.#visible = true;
         this.alignCSS();
     }
+    hide() {
+        if (!this.#visible) { return; }
+        this.#visible = false;
+        this.alignCSS();
+    }
     // quick utility function to set the CSS of our HTML element to align with the values set here
     alignCSS() {
+        console.debug(`WINDOW ${this.#id}: aligning CSS`)
         this.#element.style.width = this.#width;
         this.#element.style.height = this.#height;
         this.#element.style.left = this.#position[0];
@@ -391,9 +416,11 @@ class OSWindow {
     }
     setStyle(customStyle) {
         // customStyle is an array where the first index is the key and the second value is the value for a CSS rule
+        console.debug(`WINDOW ${this.#id}: setting style ${customStyle[0]} to ${customStyle[1]}`)
         this.#element.style[customStyle[0]] = customStyle[1];
     }
     populateFrame(sourceURL) {
+        console.debug(`populating frame ${this.#id} with source URL ${sourceURL}`)
         document.getElementById(`frame-${this.#id}`).src = sourceURL;
     }
 }
@@ -417,7 +444,7 @@ class OSApplication {
         this.#options = options;
         this.#styles = styles
         this.#linkedWindows = [];
-        this.#linkedWindows[0] = windowManager.acquireWindow(this);
+        this.registerWindow(windowManager);
     }
 
     // standard getters
@@ -445,6 +472,9 @@ class OSApplication {
 
     async registerWindow(windowManager) {
         this.#linkedWindows.push(await windowManager.acquireWindow(this))
+    }
+    async openWindow(index) {
+        this.#linkedWindows[index].open();
     }
     
 }

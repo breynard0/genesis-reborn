@@ -315,4 +315,8 @@ body {
 .tile-text {
     width: fit-content;
     align-self: center;
+    font-style: italic;
+    color: white;
+    background-color: rgba(0,0,0, 0.3);
+    font-family: monospace;
 }

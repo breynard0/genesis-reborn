@@ -231,15 +231,22 @@ body {
     display: flex;
     flex-direction: column;
     border-radius: 4px;
+    background: rgb(113, 112, 112);
+    
 }
 .windowBar {
     display: flex;
     flex-direction: row;
+    justify-items: flex-end;
+    align-items: center;
+    background: rgb(70, 70, 70);
 }
 
 .windowTitle {
     justify-self: center;
     font-family: 'W95FA Regular', monospace;
+    background: none;
+    color: black;
 }
 
 .windowBar .minButton {
@@ -253,7 +260,6 @@ body {
 .windowBar .closeButton {
     content: "X";
     font-family: monospace;
-    align-self: flex-end;
     height: 80%;
     margin-top: 10%;
     margin-bottom: 10%;
@@ -263,13 +269,13 @@ body {
 .windowBar .maxButton {
     content: "O";
     font-family: monospace;
-    align-self: flex-end;
     height: 80%;
     margin-top: 10%;
     margin-bottom: 10%;
     margin-left: 2%;
 }
 
+/* the body of the window below the top bar, holds the iframe */
 .windowBody {
     width: 100%;
     flex: 1 1 auto;

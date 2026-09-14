@@ -203,7 +203,7 @@ class WindowManager {
         this.#highestZ++;
         let startingZ = this.#highestZ;
         console.debug(`WM: Building window ${windowID} with width ${defaultWidth} and height ${defaultHeight}, starting z-index is ${startingZ}`)
-        let newWindow = new OSWindow(this, windowID, defaultWidth, defaultHeight, startingZ, app.getStyles(), window.innerWidth / 3, window.innerHeight / 3);
+        let newWindow = new OSWindow(this, windowID, app.getTitle(), defaultWidth, defaultHeight, startingZ, app.getStyles(), window.innerWidth / 3, window.innerHeight / 3);
         this.#windowList.set(windowID, newWindow);
         return newWindow;
     }
@@ -293,6 +293,7 @@ class DesktopManager {
 class OSWindow {
     #windowManager; // pointer to the WindowManager
     #id; // unique id assigned by the WindowManager
+    #title; // window title assigned, can change
     #element; // reference to the associated div
     #visible;
     #width;
@@ -301,7 +302,7 @@ class OSWindow {
     #styles;
     #position; // 2-int tuple, corresponds to the top-left corner of the window
 
-    constructor(windowManager, id, width, height, startingZ, styles, x, y) {
+    constructor(windowManager, id, title, width, height, startingZ, styles, x, y) {
         this.#windowManager = windowManager
         this.#id = id;
         this.#width = width; // windowmanager will default this if it's not provided
@@ -322,26 +323,33 @@ class OSWindow {
         windowBar.classList.add("windowBar");
 
         let windowTitle = document.createElement("p");
+        windowTitle.innerText = this.#title;
         windowTitle.classList.add("windowTitle");
 
         let closeButton = document.createElement("p");
+        closeButton.innerText = "X";
         closeButton.classList.add("closeButton");
 
         let minimizeButton = document.createElement("p");
+        minimizeButton.innerText = "_";
         minimizeButton.classList.add("minButton");
 
         let maximizeButton = document.createElement("p");
+        maximizeButton.innerText = "O";
         maximizeButton.classList.add("maxButton");
 
+        windowBar.appendChild(windowTitle);
         windowBar.appendChild(minimizeButton);
         windowBar.appendChild(closeButton);
         windowBar.appendChild(maximizeButton);
+        windowDiv.appendChild(windowBar);
 
-        let windowBody = document.createElement("div")
+        let windowBody = document.createElement("div") // the body of the window below the top bar, holds the iframe
         windowBody.classList.add("windowBody");
         // create the iframe that will be populated with the application source
         let bodyFrame = document.createElement("iframe");
         windowBody.appendChild(bodyFrame);
+        windowDiv.appendChild(windowBody);
         // super important! the iframe's id is frame-{windowID}
         bodyFrame.id = "frame-" + this.#id;
         // apply styles specified in the manifest
@@ -409,6 +417,11 @@ class OSWindow {
         this.#element.style.top = `${this.#position[1]}px`;
         this.#element.style.zIndex = this.#zIndex;
         this.#visible ? this.#element.style.display = "block" : this.#element.style.display = "none";
+    }
+    setTitle(newTitle) {
+        this.#title = newTitle;
+        // today i learned you can call query selector on an element to find things in its children!
+        this.#element.querySelector(".windowTitle").innerText = newTitle;
     }
     setPosition(x, y) {
         this.#position = [x, y];

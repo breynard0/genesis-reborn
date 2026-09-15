@@ -199,6 +199,13 @@ class WindowManager {
         return this.#windowList.get(id);
     }
     makeActive(windowId) {
+        try {
+            this.#windowList.get(windowId).setLayer(this.getTopZ());
+        } catch (err) {
+            console.error(`WM: failed to make window ${windowId} active: ${err}`);
+            // decrement highest Z to counteract failure
+            this.#highestZ--;
+        }
         this.#windowList.get(windowId).setLayer(this.getTopZ());
         document.getElementById(`tab-${windowId}`).classList.add(".active");
     }
@@ -230,10 +237,18 @@ class WindowManager {
         newTab.id = `tab-${windowID}`;
         newTab.classList.add("tab");
         let tabText = document.createElement("p");
+        tabText.innerText = app.getTitle();
         let tabIcon = document.createElement("img");
+        tabIcon.src = app.getIcon();
         newTab.appendChild(tabIcon);
         newTab.appendChild(tabText);
         document.getElementById("tabcontainer").appendChild(newTab);
+        newTab.addEventListener("click", () => { 
+            newWindow.open();
+            // mark this tab as active and remove the tag from any other tab that has it
+            document.querySelectorAll(".tab").forEach((tab) => { tab.classList.remove("active"); });
+            newTab.classList.add("active");
+        });
         return newWindow;
     }
     openWindow(id) {

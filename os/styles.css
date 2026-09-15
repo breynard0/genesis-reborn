@@ -8,6 +8,13 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    /* CSS variables! */
+    /*
+    */
+    /* tab backgrounds - normal, minimized, and active */
+    --tab-normal: rgba(240, 240, 240, 0.8);
+    --tab-minimized: rgba(240, 240, 240, 0.3);
+    --tab-active: rgba(255, 255, 255, 0.85);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -216,13 +223,33 @@ body {
 
 #tabcontainer {
     flex: 1 1 auto;
+    flex-direction: row;
+    align-items: center;
 }
 
 #tabcontainer .tab {
+    display: inline-block;
+    background: var(--tab-normal);
     height: 90%;
-    margin: 5% 2%;
-    flex: 0 1 auto;
-    flex-basis: 18%;
+    margin: 0;
+    flex-grow: 0;
+    flex-shrink: 1;
+    flex-basis: fit-content;
+}
+
+#tabcontainer .tab.minimized {
+    background: var(--tab-minimized);
+}
+
+#tabcontainer .tab.active {
+
+}
+
+#tabcontainer .tab img {
+    display: inline;
+    aspect-ratio: 1 / 1;
+    width: 25px;
+    height: 25px;
 }
 
 /* windows and related styling! */

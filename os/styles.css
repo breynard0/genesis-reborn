@@ -232,7 +232,8 @@ body {
     flex-direction: column;
     border-radius: 4px;
     background: linear-gradient(0deg, rgba(64, 57, 57, 1) 0%, rgba(255, 255, 255, 1) 36%, rgba(189, 175, 175, 1) 64%, rgba(64, 57, 57, 1) 100%);   
-    
+    resize: both;
+    overflow: hidden;
 }
 .windowBar {
     display: flex;
@@ -251,6 +252,7 @@ body {
     font-family: 'W95FA Regular', monospace;
     background: none;
     color: black;
+    text-overflow: ellipsis;
 }
 
 .windowBar .windowButton {
@@ -258,28 +260,31 @@ body {
     background: rgba(255, 255, 255, 0.8);
     border: solid 1px black;
     border-radius: 15%;
+    cursor: pointer;
+    margin-top: 10%;
+    margin-bottom: 10%;
+    text-align: center;
+    font-size: 1.2em;
+    align-content: center;
+    aspect-ratio: 1 / 1;
+    flex-shrink: 0;
+    max-height: min-content;
 }
 
 .windowBar .minButton {
     font-family: monospace;
     height: 80%;
-    margin-top: 10%;
-    margin-bottom: 10%;
 }
 
 .windowBar .closeButton {
     font-family: monospace;
     height: 80%;
-    margin-top: 10%;
-    margin-bottom: 10%;
     margin-left: 2%;
 }
 
 .windowBar .maxButton {
     font-family: monospace;
     height: 80%;
-    margin-top: 10%;
-    margin-bottom: 10%;
     margin-left: 2%;
 }
 
@@ -288,13 +293,14 @@ body {
     width: 100%;
     flex: 1 1 auto;
     min-height: 0;
+    display: flex; /* make it a flex container so it sizes the iframe correctly! */ 
+    align-items: stretch;
 }
 
 .windowBody iframe {
     border: none;
     /* make sure it fills its whole parent div! */
     width: 100%;
-    height: 100%;
 }
 
 /* desktop and its grid */
@@ -309,9 +315,8 @@ body {
     gap: 2%;
     /* 8x4 grid should accommodate all our applications */
     /* changed so that the columns are determined by javascript! */
-    grid-template-columns: repeat(8, 1fr);
-    grid-template-rows: repeat(4, 1fr);    
-    row-gap: 15px;
+    row-gap: 1ch;
+    column-gap: 1ch;
 }
 
 .desktopTile {

@@ -167,9 +167,11 @@ class WindowManager {
     #globalDefaultWidth; // the global default width for windows when created, as configured in the manifest.json file
     #globalDefaultHeight; // the global default height for windows when they're created 
     #highestZ; // the z-index for the current highest-stacked window
+    #tabs; // the tabs at the bottom in the taskbar
     constructor(options) {
         this.#numberWindows = 0;
         this.#windowList = new Map();
+        this.#tabs = new Array();
         // options computed at load time based on screen dimensions
         if (options["defaultWindowWidth"] != undefined) { this.#globalDefaultWidth = options["defaultWindowWidth"]; }
         else { this.#globalDefaultWidth = 500}
@@ -186,6 +188,10 @@ class WindowManager {
     getTopZ() {
         this.#highestZ++;
         return this.#highestZ;
+    }
+    makeActive(windowId) {
+        this.#windowList[windowId].setLayer(this.getTopZ());
+        document.getElementById(`tab-${windowId}`).classList.add(".active");
     }
     // used by applications to reserve a window from the window manager - they're then made visible with openWindow
     async acquireWindow(app) {
@@ -205,9 +211,22 @@ class WindowManager {
         console.debug(`WM: Building window ${windowID} with width ${defaultWidth} and height ${defaultHeight}, starting z-index is ${startingZ}`)
         let newWindow = new OSWindow(this, windowID, app.getTitle(), defaultWidth, defaultHeight, startingZ, app.getStyles(), window.innerWidth / 3, window.innerHeight / 3);
         this.#windowList.set(windowID, newWindow);
+        newWindow.populateFrame(app.getSource());
+
+        // make the tab for it in the task bar at the bottom
+        // TODO: add support for tab styling
+        let newTab = document.createElement("div");
+        newTab.id = `tab-${windowID}`;
+        newTab.classList.add("tab");
+        let tabText = document.createElement("p");
+        let tabIcon = document.createElement("img");
+        newTab.appendChild(tabIcon);
+        newTab.appendChild(tabText);
+        document.getElementById("tabcontainer").appendChild(newTab);
         return newWindow;
     }
     openWindow(id) {
+        
         this.#windowList[id].open();
     }
     closeWindow(id) {
@@ -300,7 +319,9 @@ class OSWindow {
     #height;
     #zIndex;
     #styles;
-    #position; // 2-int tuple, corresponds to the top-left corner of the window
+    #position;
+    #dragController;
+    dragStart;
 
     constructor(windowManager, id, title, width, height, startingZ, styles, x, y) {
         this.#windowManager = windowManager
@@ -310,7 +331,7 @@ class OSWindow {
         this.#height = height;
         this.#zIndex = startingZ
         this.#styles = styles;
-        this.setPosition(x, y);
+        this.#position = [x, y] // safer than using setPosition - we need a default
         this.createElement();
     }
 
@@ -344,9 +365,32 @@ class OSWindow {
 
         windowBar.appendChild(windowTitle);
         windowBar.appendChild(minimizeButton);
-        windowBar.appendChild(closeButton);
         windowBar.appendChild(maximizeButton);
+        windowBar.appendChild(closeButton);
         windowDiv.appendChild(windowBar);
+
+        // if the window gets any input, we wanna make it active!
+        windowDiv.addEventListener("mousedown", (ev) => {
+            this.makeActive();
+        })
+
+        const onMouseMove = (ev) => {
+            let deltaX = ev.clientX - this.dragStart[0];
+            let deltaY = ev.clientY - this.dragStart[1];
+            this.setPosition(this.#position[0] + deltaX, this.#position[1] + deltaY);
+            this.dragStart = [ev.clientX, ev.clientY];
+        }
+
+        windowBar.addEventListener("mousedown", (ev) => {
+            ev.preventDefault();
+            this.dragStart = [ev.clientX, ev.clientY];
+            this.#dragController = document.addEventListener("mousemove", onMouseMove);
+            document.querySelectorAll("iframe").forEach((frame) => { frame.style.addE})
+        });
+        document.addEventListener("mouseup", (ev) => {
+            ev.preventDefault();
+            document.removeEventListener("mousemove", onMouseMove);
+        })
 
         let windowBody = document.createElement("div") // the body of the window below the top bar, holds the iframe
         windowBody.classList.add("windowBody");
@@ -401,6 +445,7 @@ class OSWindow {
     }
 
     open() {
+        this.makeActive();
         if (this.#visible) { return; } // no need to do anything
         // otherwise, change it to true and trigger a CSS realignment
         this.#visible = true;
@@ -420,7 +465,7 @@ class OSWindow {
         this.#element.style.left = `${this.#position[0]}px`;
         this.#element.style.top = `${this.#position[1]}px`;
         this.#element.style.zIndex = this.#zIndex;
-        this.#visible ? this.#element.style.display = "block" : this.#element.style.display = "none";
+        this.#visible ? this.#element.style.display = "flex" : this.#element.style.display = "none";
     }
     setTitle(newTitle) {
         this.#title = newTitle;
@@ -429,7 +474,11 @@ class OSWindow {
     }
     setPosition(x, y) {
         this.#position = [x, y];
+        // adjust the CSS as well - it's unwise to call alignCSS every time we just make changes to the position
+        this.#element.style.left = `${this.#position[0]}px`;
+        this.#element.style.top = `${this.#position[1]}px`;
     }
+    movePosition(x, y) { this.setPosition(this.#position[0] + x, this.#position[1] + y); }
     // used by the WindowManager to assign new z-indexes to windows
     setLayer(z) {
         this.#zIndex = z;
@@ -444,12 +493,19 @@ class OSWindow {
         console.debug(`populating frame ${this.#id} with source URL ${sourceURL}`)
         document.getElementById(`frame-${this.#id}`).src = sourceURL;
     }
+
+    makeActive() {
+        this.#windowManager.makeActive(this.#id);
+    }
+
     maximize() {
-        this.#position = [0, 0];
+        this.setPosition(0, 0);
+        this.#width = this.#element.parent.getBoundingClientRect().width;
         this.#height = this.#element.parentElement.getBoundingClientRect().height;
         alignCSS();
     }
     minimize() {
+        document.getElementById(`tab-${this.#id}`).classList.add("minimized")
         this.hide();
     }
 }

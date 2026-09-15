@@ -325,6 +325,13 @@ body {
     align-content: center; /* gotta remember that column flips justify and align */
     justify-content: center;
     /* position in the grid is computed by DesktopManager in os.js */
+    transition: all 0.2s;
+}
+
+.desktopTile.active {
+    background: rgba(100, 100, 100, 0.5);
+    filter: invert();
+
 }
 
 .tile-img {

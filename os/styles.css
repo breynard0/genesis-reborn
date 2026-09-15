@@ -231,7 +231,7 @@ body {
     display: flex;
     flex-direction: column;
     border-radius: 4px;
-    background: linear-gradient(0deg, rgba(255, 255, 255, 1) 0%, rgba(189, 175, 175, 1) 64%, rgba(64, 57, 57, 1) 100%);   
+    background: linear-gradient(0deg, rgba(64, 57, 57, 1) 0%, rgba(255, 255, 255, 1) 36%, rgba(189, 175, 175, 1) 64%, rgba(64, 57, 57, 1) 100%);   
     
 }
 .windowBar {
@@ -241,13 +241,23 @@ body {
     justify-content: flex-end;
     align-items: center;
     background: rgb(70, 70, 70);
+    position: relative;
 }
 
 .windowTitle {
-    justify-self: center;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
     font-family: 'W95FA Regular', monospace;
     background: none;
     color: black;
+}
+
+.windowBar .windowButton {
+    padding: 1%;
+    background: rgba(255, 255, 255, 0.8);
+    border: solid 1px black;
+    border-radius: 15%;
 }
 
 .windowBar .minButton {

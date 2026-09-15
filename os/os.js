@@ -164,8 +164,8 @@ class ApplicationManager {
 class WindowManager {
     #numberWindows;
     #windowList;
-    #globalDefaultWidth;
-    #globalDefaultHeight;
+    #globalDefaultWidth; // the global default width for windows when created, as configured in the manifest.json file
+    #globalDefaultHeight; // the global default height for windows when they're created 
     #highestZ; // the z-index for the current highest-stacked window
     constructor(options) {
         this.#numberWindows = 0;
@@ -330,14 +330,17 @@ class OSWindow {
         let closeButton = document.createElement("p");
         closeButton.innerText = "X";
         closeButton.classList.add("closeButton");
+        closeButton.classList.add("windowButton");
 
         let minimizeButton = document.createElement("p");
         minimizeButton.innerText = "_";
         minimizeButton.classList.add("minButton");
+        minimizeButton.classList.add("windowButton");
 
         let maximizeButton = document.createElement("p");
         maximizeButton.innerText = "O";
         maximizeButton.classList.add("maxButton");
+        maximizeButton.classList.add("windowButton");
 
         windowBar.appendChild(windowTitle);
         windowBar.appendChild(minimizeButton);
@@ -441,6 +444,14 @@ class OSWindow {
         console.debug(`populating frame ${this.#id} with source URL ${sourceURL}`)
         document.getElementById(`frame-${this.#id}`).src = sourceURL;
     }
+    maximize() {
+        this.#position = [0, 0];
+        this.#height = this.#element.parentElement.getBoundingClientRect().height;
+        alignCSS();
+    }
+    minimize() {
+        this.hide();
+    }
 }
 
 class OSApplication {
@@ -466,17 +477,13 @@ class OSApplication {
     }
 
     // standard getters
-    getId() {
-        return this.#id;
-    }
+    getId() { return this.#id; }
 
-    getTitle() {
-        return this.#title;
-    }
+    getTitle() { return this.#title; }
 
-    getIcon(){
-        return this.#iconurl;
-    }
+    getIcon(){ return this.#iconurl; }
+
+    getSource() { return this.#appSource; }
 
     getTooltip() { return this.#tooltip; }
 

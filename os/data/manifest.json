@@ -3,7 +3,7 @@
     {
       "title": "Wormhole",
       "iconurl": "assets/wormhole-icon.png",
-      "appSource": "apps/wormhole.html",
+      "appSource": "./apps/wormhole.html",
       "tooltip": "",
       "options": {
         "defaultHeight": 200,
@@ -26,7 +26,7 @@
     {
       "title": "About",
       "iconurl": "assets/about-icon.png",
-      "appSource": "apps/about.html",
+      "appSource": "./apps/about.html",
       "tooltip": "learn about genesis!",
       "options": {},
       "styles": {}

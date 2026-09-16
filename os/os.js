@@ -48,17 +48,17 @@ async function main() {
     windowManager = new WindowManager(manifest["options"]["windowManager"]);
     appManager = new ApplicationManager(windowManager);
     windowManager.bindAppManager(appManager);
-    desktopManager = new DesktopManager(desktop)
+    desktopManager = new DesktopManager(windowManager);
 
     for (let i = 0; i < manifest["applications"].length; i++) {
         let application = manifest["applications"][i]
         try {
-            appManager.loadApp(application)
+            await appManager.loadApp(application)
         } catch (e) {
             console.error("failed to load application data from manifest: " + e.message)
         }
     }
-    appManager.populateDesktop(desktopManager);
+    await appManager.populateDesktop(desktopManager);
 
     let eyeButton = document.getElementById("eyebutton");
     let eyeDialog = document.getElementById("eyedialog");
@@ -142,7 +142,7 @@ class ApplicationManager {
         this.#expectedFields = ["title", "iconurl", "appSource", "tooltip", "options", "styles"]
     }
     // takes the data for an application supplied in the JSON manifest and loads it into an OSApplication stored in the list!
-    loadApp(applicationData) {
+    async loadApp(applicationData) {
         for (let i = 0; i < this.#expectedFields.length; i++) {
             let field = this.#expectedFields[i]
             if (applicationData[field] == undefined) {
@@ -151,7 +151,7 @@ class ApplicationManager {
         }
         this.#numberApplications++;
         // precompute so we can pass it to the constructor and use it for assignment
-        let newAppID = this.#numberApplications.toString();
+        let newAppID = (await this.hashTitle(applicationData.title)).slice(0, 7);
         let newApp = new OSApplication(this.#windowManager, newAppID, applicationData.title, applicationData.iconurl, applicationData.appSource, applicationData.tooltip, applicationData.options, applicationData.styles)
         this.#applicationList[newAppID] = newApp;
         return newApp;
@@ -236,7 +236,7 @@ class WindowManager {
         this.#numberWindows += 1;
         // probably the most complicated bit of JavaScript in this whole file - just uses SHA-256 to create a unique hash from the app's title and converts it to hex to be cleanly represented
         // before this i was converting it to UTF-8 using TextDecoder but that produced a bunch of diamonds and garbage
-        
+        let titleHashHex = await this.#appManager.hashTitle(app.getTitle())
         let windowID = titleHashHex.slice(0, 7) + "-" + (this.#numberWindows).toString()
         console.debug(`WM: ${app.getTitle()} got window ID ${windowID}`)
         let defaultWidth = this.#globalDefaultWidth;
@@ -275,16 +275,17 @@ class WindowManager {
         this.#windowList[id].open();
     }
     closeWindow(id) {
+        let appID = id.slice(0, 7)
         // remove the associated tab element
         document.getElementById(`tab-${id}`).remove();
         // remove the DOM element for the relevant window
         document.getElementById(id).remove();
         // use the bound ApplicationManager to let the linked app know its window has been closed
         if (this.#appManager != undefined) {
-            // gotta separate out the app ID from the window ID:
-            let myID = new String();
-            myID.
-            this.#appManager.getApp(id)
+            if (!this.#appManager instanceof ApplicationManager) {
+                console.error(`WM: somehow bound to invalid app manager`)
+            } 
+            this.#appManager.getApp(appID).purgeWindow(id);
         }
         this.#windowList.delete(id) ? console.debug(`WM: deleted window ${id}`) : console.error(`WM: asked to delete a window that does not exist`);
     }
@@ -292,10 +293,13 @@ class WindowManager {
 }
 
 class DesktopManager {
+    #windowManager;  // pointer to windowManager for interacting with windows 
     #grid;          // 2D array: string[rows][cols]  
     #nextPos;       // int tuple, tracks the next position to be populated
     #gridElement;   // pointer to the actual DOM element
-    constructor() {
+    constructor(windowManager) {
+        // bind our windowManager
+        windowManager instanceof WindowManager ? this.#windowManager = windowManager : console.error("DM: asked to bind invalid WM"); 
         // initialize our 2D array for managing the desktop
         // grid = string[rows][cols], where each index has the application name
         this.#grid = new Array(desktopRows);
@@ -363,7 +367,7 @@ class DesktopManager {
 
         tileElement.addEventListener("dblclick", () => {
             console.debug(`DESKTOP: ${OSapp.getTitle()} double clicked, window should open`);
-            OSapp.openWindows();
+            OSapp.openWindows(this.#windowManager);
         })
 
         this.#gridElement.appendChild(tileElement);
@@ -576,10 +580,13 @@ class OSWindow {
         this.#height = this.#element.parentElement.getBoundingClientRect().height;
         this.alignCSS();
     }
+    // minimize a window by hiding it and setting its tab to be minimized
     minimize() {
         document.getElementById(`tab-${this.#id}`).classList.add("minimized")
         this.hide();
     }
+    // ID getter - used in filtering in OSApplication.purgeWindow()
+    getId() { return this.#id; }
 }
 
 class OSApplication {
@@ -627,17 +634,22 @@ class OSApplication {
     }
 
     // called by WindowManager to instruct an application to purge any windows the WindowManager has deleted
-    async purgeWindow() {
-
+    async purgeWindow(id) {
+        this.#linkedWindows.forEach((OSwindow, index) => {
+            if (OSwindow.getId() == id) {
+                this.#linkedWindows.splice(index, 1);
+            }
+        });
     }
 
     async registerWindow(windowManager) {
         console.debug(`APP${this.#id}: registering new window`)
         this.#linkedWindows.push(await windowManager.acquireWindow(this))
     }
-    async openWindows() {
+    async openWindows(windowManager) {
         console.debug(`APP${this.#id}: opening windows for application ${this.#title}`);
         this.#linkedWindows.forEach((OSwindow) => { OSwindow.open(); })
+        if (this.#linkedWindows.length == 0) { this.registerWindow(windowManager); }
     }
     
 }

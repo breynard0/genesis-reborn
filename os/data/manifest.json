@@ -4,7 +4,7 @@
       "title": "Wormhole",
       "iconurl": "assets/wormhole-icon.png",
       "appSource": "./apps/wormhole.html",
-      "tooltip": "",
+      "tooltip": "who knows...",
       "options": {
         "defaultHeight": 200,
         "defaultWidth": 400,
@@ -30,6 +30,19 @@
       "tooltip": "learn about genesis!",
       "options": {},
       "styles": {}
+    },
+    {
+      "title": "Time Machine",
+      "iconurl": "assets/time-machine-icon.png",
+      "appSource": "./apps/timemachine.html",
+      "tooltip": "roadmap for the site :)",
+      "options": {},
+      "styles": {
+        "windowStyles": {},
+        "barStyles": {
+          "background": "#c4a23c"
+        }
+      }
     },
     {
       "title": "Multiboot Spec",

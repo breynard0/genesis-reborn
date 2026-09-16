@@ -241,7 +241,8 @@ body {
     margin: 6px 6px;
     flex-grow: 0;
     flex-shrink: 1;
-    flex-basis: calc(fit-content + 25px);
+    flex-basis: fit-content;
+    padding-inline: 12.5px;
     flex-direction: row;
     justify-items: center;
     align-items: center;

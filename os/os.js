@@ -249,11 +249,12 @@ class WindowManager {
         console.debug(`WM: Building window ${windowID} with width ${defaultWidth} and height ${defaultHeight}, starting z-index is ${startingZ}`)
         let newWindow = new OSWindow(this, windowID, app.getTitle(), defaultWidth, defaultHeight, startingZ, app.getStyles(), window.innerWidth / 3, window.innerHeight / 3);
         this.#windowList.set(windowID, newWindow);
-        newWindow.populateFrame(app.getSource());
+        await newWindow.populateFrame(app.getSource());
 
         // make the tab for it in the task bar at the bottom
         // TODO: add support for tab styling
         let newTab = document.createElement("div");
+        newTab.title = app.getTooltip();
         newTab.id = `tab-${windowID}`;
         newTab.classList.add("tab");
         let tabText = document.createElement("p");
@@ -345,6 +346,8 @@ class DesktopManager {
 
         // create and configure the relevant DOM element
         let tileElement = document.createElement("div");
+        // use the HTML title attribute to make the tooltip pop up on mouseover!
+        tileElement.title = OSapp.getTooltip();
         let tileImg = document.createElement("img");
         tileImg.classList.add("tile-img");
         let tileText = document.createElement("p");
@@ -440,6 +443,8 @@ class OSWindow {
 
         // if the window gets any input, we wanna make it active!
         windowDiv.addEventListener("mousedown", (ev) => {
+            // prevent the window trying to make itself active once it's already been closed
+            if (ev.target.classList.contains("closeButton")) { return; }
             this.makeActive();
         })
 
@@ -561,7 +566,7 @@ class OSWindow {
         console.debug(`WINDOW ${this.#id}: setting style ${customStyle[0]} to ${customStyle[1]}`)
         this.#element.style[customStyle[0]] = customStyle[1];
     }
-    populateFrame(sourceURL) {
+    async populateFrame(sourceURL) {
         console.debug(`populating frame ${this.#id} with source URL ${sourceURL}`)
         document.getElementById(`frame-${this.#id}`).src = sourceURL;
     }
@@ -648,8 +653,8 @@ class OSApplication {
     }
     async openWindows(windowManager) {
         console.debug(`APP${this.#id}: opening windows for application ${this.#title}`);
+        if (this.#linkedWindows.length == 0) { await this.registerWindow(windowManager); }
         this.#linkedWindows.forEach((OSwindow) => { OSwindow.open(); })
-        if (this.#linkedWindows.length == 0) { this.registerWindow(windowManager); }
     }
     
 }

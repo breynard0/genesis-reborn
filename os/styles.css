@@ -2,6 +2,10 @@
 
 /* font imports */
 @import urL('https://fonts.googleapis.com/css2?family=Handjet:wght,ELSH@100..900,2&display=swap');
+@font-face {
+    font-family: W95;
+    src: url("./assets/W95FA.otf") format("opentype");
+}
 /* fine... i guess i'll try responsive web design... */
 
 * {
@@ -12,7 +16,7 @@
     /*
     */
     /* tab backgrounds - normal, minimized, and active */
-    --tab-normal: rgba(240, 240, 240, 0.8);
+    --tab-normal: rgba(240, 240, 240, 0.5);
     --tab-minimized: rgba(240, 240, 240, 0.3);
     --tab-active: rgba(255, 255, 255, 0.85);
 }
@@ -229,13 +233,22 @@ body {
 }
 
 #tabcontainer .tab {
-    display: inline-block;
+    display: inline-flex;
     background: var(--tab-normal);
+    border: 1px solid black;
+    border-radius: 3%;
     height: 90%;
-    margin: 5% 2%;
+    margin: 6px 6px;
     flex-grow: 0;
     flex-shrink: 1;
-    flex-basis: fit-content;
+    flex-basis: calc(fit-content + 25px);
+    flex-direction: row;
+    justify-items: center;
+    align-items: center;
+    justify-content: stretch;
+    flex-wrap: nowrap;
+
+    font-family: W95, monospace;
 }
 
 #tabcontainer .tab.minimized {
@@ -244,6 +257,10 @@ body {
 
 #tabcontainer .tab.active {
     background: var(--tab-active);
+}
+
+#tabcontainer .tab.active .img {
+    filter: invert();
 }
 
 #tabcontainer .tab img {
@@ -359,13 +376,13 @@ body {
 .desktopTile.active {
     background: rgba(100, 100, 100, 0.5);
     filter: invert();
-
 }
 
+/* hasn't been used yet!
 .tile-img {
 
 }
-
+*/
 .tile-text {
     width: fit-content;
     align-self: center;

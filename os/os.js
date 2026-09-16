@@ -47,6 +47,7 @@ async function main() {
 
     windowManager = new WindowManager(manifest["options"]["windowManager"]);
     appManager = new ApplicationManager(windowManager);
+    windowManager.bindAppManager(appManager);
     desktopManager = new DesktopManager(desktop)
 
     for (let i = 0; i < manifest["applications"].length; i++) {
@@ -67,7 +68,7 @@ async function main() {
         console.log("eyebutton triggered");
         eyeDialog.showPopover();
     })
-    document.getElementById("about-trigger").addEventListener("click", () => {})
+    document.getElementById("about-trigger").addEventListener("click", () => { appManager.open})
     document.getElementById("shutdown-trigger").addEventListener("click", () => { shutdown(); })
     loadingOverlay.remove();
 }
@@ -167,9 +168,23 @@ class ApplicationManager {
             desktopManager.populate(app[1]);
         })
     }
+
+    // returns the hex representation of an app's title after going through a SHA-256 hash.
+    // used to generate IDs for windows and applications!
+    async hashTitle(title) {
+        let titleHash = await crypto.subtle.digest("SHA-256", (new TextEncoder).encode(title))
+        let titleHashHex = Array.from(new Uint8Array(titleHash)).map(b => b.toString(16).padStart(2, "0")).join("")
+        return titleHashHex;
+    }
+
+    // utility function to get an app from its ID
+    getApp(id) {
+        return this.#applicationList[id];
+    }
 }
 
 class WindowManager {
+    #appManager; // pointer to the ApplicationManager so that WindowManager can communicate its decisions to applications
     #numberWindows;
     #windowList;
     #globalDefaultWidth; // the global default width for windows when created, as configured in the manifest.json file
@@ -209,14 +224,19 @@ class WindowManager {
         this.#windowList.get(windowId).setLayer(this.getTopZ());
         document.getElementById(`tab-${windowId}`).classList.add(".active");
     }
+
+    bindAppManager(appManager) {
+        if (!appManager instanceof ApplicationManager) { console.error("WM: asked to bind invalid app manager") }
+        this.#appManager = appManager;
+    }
+
     // used by applications to reserve a window from the window manager - they're then made visible with openWindow
     async acquireWindow(app) {
         console.debug(`WM: ${app.getTitle()} attempting to acquire window`)
         this.#numberWindows += 1;
         // probably the most complicated bit of JavaScript in this whole file - just uses SHA-256 to create a unique hash from the app's title and converts it to hex to be cleanly represented
         // before this i was converting it to UTF-8 using TextDecoder but that produced a bunch of diamonds and garbage
-        let titleHash = await crypto.subtle.digest("SHA-256", (new TextEncoder).encode(app.getTitle()))
-        let titleHashHex = Array.from(new Uint8Array(titleHash)).map(b => b.toString(16).padStart(2, "0")).join("")
+        
         let windowID = titleHashHex.slice(0, 7) + "-" + (this.#numberWindows).toString()
         console.debug(`WM: ${app.getTitle()} got window ID ${windowID}`)
         let defaultWidth = this.#globalDefaultWidth;
@@ -255,8 +275,17 @@ class WindowManager {
         this.#windowList[id].open();
     }
     closeWindow(id) {
-        // remove the associated tab
+        // remove the associated tab element
         document.getElementById(`tab-${id}`).remove();
+        // remove the DOM element for the relevant window
+        document.getElementById(id).remove();
+        // use the bound ApplicationManager to let the linked app know its window has been closed
+        if (this.#appManager != undefined) {
+            // gotta separate out the app ID from the window ID:
+            let myID = new String();
+            myID.
+            this.#appManager.getApp(id)
+        }
         this.#windowList.delete(id) ? console.debug(`WM: deleted window ${id}`) : console.error(`WM: asked to delete a window that does not exist`);
     }
 
@@ -334,7 +363,7 @@ class DesktopManager {
 
         tileElement.addEventListener("dblclick", () => {
             console.debug(`DESKTOP: ${OSapp.getTitle()} double clicked, window should open`);
-            OSapp.openWindow(0);
+            OSapp.openWindows();
         })
 
         this.#gridElement.appendChild(tileElement);
@@ -597,13 +626,18 @@ class OSApplication {
         return this.#styles;
     }
 
+    // called by WindowManager to instruct an application to purge any windows the WindowManager has deleted
+    async purgeWindow() {
+
+    }
+
     async registerWindow(windowManager) {
         console.debug(`APP${this.#id}: registering new window`)
         this.#linkedWindows.push(await windowManager.acquireWindow(this))
     }
-    async openWindow(index) {
-        console.debug(`APP${this.#id}: opening window ${index}`)
-        this.#linkedWindows[index].open();
+    async openWindows() {
+        console.debug(`APP${this.#id}: opening windows for application ${this.#title}`);
+        this.#linkedWindows.forEach((OSwindow) => { OSwindow.open(); })
     }
     
 }

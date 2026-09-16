@@ -45,6 +45,14 @@
       }
     },
     {
+      "title": "Submit",
+      "iconurl": "assets/submit-icon.png",
+      "appSource": "https://forms.hackclub.com/genesis-submission",
+      "tooltip": "submit your projects once they're done!",
+      "options": {},
+      "styles": {}
+    },
+    {
       "title": "Multiboot Spec",
       "iconurl": "assets/multiboot-icon.png",
       "appSource": "https://mbspec.breynard.net/",

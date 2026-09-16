@@ -7,10 +7,12 @@
                 font-family: sans-serif;
             }
             body::before {
-                background: repeating-radial-gradient(black, black 5px, white 5px, white 10px);
+                content: "";
+                position: fixed;
+                background: repeating-radial-gradient(black, black 15px, white 15px, white 30px);
                 inset: 0;
                 z-index: -1;
-                filter: blur(5px);
+                filter: blur(7px) sepia(90%);
             }
             li {
                 transition: color 1s;
@@ -25,7 +27,7 @@
         <h4>aka: website roadmap!</h4>
         <h2>planned features for the site you're currently on:</h2>
         <ul>
-            <li>shop and submission form!</li>
+            <li>shop!</li>
             <li>desktop dragging!</li>
             <li>better assets than these 20-second ones :P</li>
             <li>tab styling!</li>

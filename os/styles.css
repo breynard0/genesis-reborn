@@ -225,13 +225,14 @@ body {
     flex: 1 1 auto;
     flex-direction: row;
     align-items: center;
+    max-height: 100%;
 }
 
 #tabcontainer .tab {
     display: inline-block;
     background: var(--tab-normal);
     height: 90%;
-    margin: 0;
+    margin: 5% 2%;
     flex-grow: 0;
     flex-shrink: 1;
     flex-basis: fit-content;
@@ -242,7 +243,7 @@ body {
 }
 
 #tabcontainer .tab.active {
-
+    background: var(--tab-active);
 }
 
 #tabcontainer .tab img {

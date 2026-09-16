@@ -30,6 +30,14 @@
       "tooltip": "learn about genesis!",
       "options": {},
       "styles": {}
+    },
+    {
+      "title": "Multiboot Spec",
+      "iconurl": "assets/multiboot-icon.png",
+      "appSource": "https://mbspec.breynard.net/",
+      "tooltip": "Brendan made this simplified Multiboot spec for your bootloaders!",
+      "options": {},
+      "styles": {}
     }
   ],
   "options": {

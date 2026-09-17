@@ -9,12 +9,16 @@
     }
 }
 
+* {
+    --follower-size: 50px;
+}
+
 @media only screen and (max-width: 600px) {
     body {
         background-color: black;
     }
     #angel-unwound {
-        display: hidden;
+        display: none;
     }
 }
 
@@ -31,7 +35,9 @@
 }
 
 @media only screen and (min-width: 1200px) {
-
+    * {
+        --follower-size: 100px;
+    }
 }
 
 @media only screen and (min-width: 1440px) {
@@ -41,16 +47,72 @@
 @media only screen and (min-width: 1920px) {
     
 }
-body {
-    background: repeating-linear-gradient(45deg, rgb(89, 86, 86), white 2%);
-}
 
-body::backdrop {
-    background: black;
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, rgb(35, 35, 35) 0%, rgb(72, 47, 54) 2%, rgb(42, 42, 42) 4%);
+    filter: blur(8px) hue-rotate(18deg);
 }
 
 #angel-unwound {
     position: fixed;
     bottom: 0px;
-    left: 10%;
+    left: 0;
+    filter: drop-shadow(20px 0 4px rgb(149, 149, 149));
+    z-index: 2;
+}
+
+#genesis-logo {
+    position: fixed;
+    z-index: 1;
+    left: 16.6666%;
+    top: 10%;
+}
+
+#enter {
+    position: fixed; 
+    display: inline-flex;
+    z-index: 3;
+    right: 30%;
+    top: 50%;
+    background: rgba(0, 0, 0, 0.8);
+    border: solid black 1px;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+    width: 24em;
+    height: 15%;
+    transform: skew(-20deg) rotateZ(-15eg) rotateY(-20deg);
+
+}
+
+#enter p {
+    font-size: 5em;
+    color: white;
+    font-family: monospace;
+    padding: 5%;
+    text-align: center;
+    height: fit-content;
+}
+
+@keyframes huerotate {
+    0% {
+        backdrop-filter: hue-rotate(0deg);
+    }
+    100% {
+        backdrop-filter: hue-rotate(360deg);
+    }
+}
+
+#follower {
+    z-index: 30;
+    position: fixed;
+    animation: 3s ease-in infinite huerotate;
+    background: rgba(20, 20, 20, 0.1);
+    border-radius: 100%;
+    width: var(--follower-size);
+    height: var(--follower-size);
+    transform: translateX(calc(var(--follower-size) * -0.5)) translateY(calc(var(--follower-size) * -0.5));
 }

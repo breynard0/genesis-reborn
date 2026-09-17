@@ -77,14 +77,14 @@ body::before {
     z-index: 3;
     right: 30%;
     top: 50%;
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.4);
     border: solid black 1px;
     text-align: center;
     align-items: center;
     justify-content: center;
     width: 24em;
     height: 15%;
-    transform: skew(-20deg) rotateZ(-15eg) rotateY(-20deg);
+    transform: skew(-30deg) rotateZ(-15deg) rotateY(-20deg);
 
 }
 
@@ -95,6 +95,15 @@ body::before {
     padding: 5%;
     text-align: center;
     height: fit-content;
+    filter: drop-shadow(0 0 0.07em white);
+}
+
+#hc-flag {
+    position: fixed;
+    top: 0;
+    left: 2%;
+    transform-origin: top left;
+    transform: scale(0.4);
 }
 
 @keyframes huerotate {
@@ -115,4 +124,26 @@ body::before {
     width: var(--follower-size);
     height: var(--follower-size);
     transform: translateX(calc(var(--follower-size) * -0.5)) translateY(calc(var(--follower-size) * -0.5));
+    pointer-events: none;
+}
+#footer {
+    position: fixed;
+    bottom: 2%;
+    right: 15%;
+}
+#footer p {
+    font-size: 3em;
+    color: white;
+    filter: drop-shadow(0 0 0.07em white);
+    font-style: italic;
+    border: 3px double white;
+    padding: 0.2em;
+    transition: border-radius 1s;
+    backdrop-filter: sepia(50%);
+}
+#footer p a {
+    color: white;
+}
+#footer p:hover {
+    border-radius: 5%;
 }

@@ -23,3 +23,7 @@ let gen = ellipsis();
 setInterval(() => {
     document.querySelector("#enter p").innerText = "enter" + gen.next().value;
 },1000)
+
+document.getElementById("enter").addEventListener("click", (ev) => {
+    window.location.assign("/os")
+})

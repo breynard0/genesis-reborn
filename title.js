@@ -25,5 +25,5 @@ setInterval(() => {
 },1000)
 
 document.getElementById("enter").addEventListener("click", (ev) => {
-    window.location.assign("/os")
+    window.location.assign("/os/")
 })

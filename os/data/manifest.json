@@ -59,6 +59,14 @@
       "tooltip": "Brendan made this simplified Multiboot spec for your bootloaders!",
       "options": {},
       "styles": {}
+    },
+    {
+      "title": "lose me money",
+      "iconurl": "assets/fuckme.png",
+      "appSource": "https://forms.hackclub.com/bounty",
+      "tooltip": "this one's for anson",
+      "options": {},
+      "styles": {}
     }
   ],
   "options": {

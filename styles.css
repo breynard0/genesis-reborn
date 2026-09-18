@@ -2,18 +2,9 @@
 
 /* fine... i guess i'll try responsive web design... */
 
-@media (prefers-reduced-motion: reduce) {
-    * {
-        animation: none ;
-        transition: none ;
-    }
-}
-
 * {
     --follower-size: 50px;
 }
-
-
 
 body::before {
     content: "";
@@ -121,7 +112,10 @@ body::before {
         background-color: black;
     }
     #angel-unwound {
-        display: none;
+        position: absolute;
+        width: 100vw;
+        bottom: 25vh;
+        z-index: 0;
     }
     #follower {
         display: none;
@@ -140,9 +134,18 @@ body::before {
         width: 8ch;
         height: 5ch;
         left: 50%;
+        transform: translateX(-50%) skew(-30deg) rotateZ(-15deg) rotateY(-20deg);
     }
     #enter p {
         font-size: inherit;
+    }
+    #footer {
+        left: 30vw;
+        width: 40vw;
+    }
+    #footer p {
+        font-size: 1em;
+        text-align: center;
     }
 }
 
@@ -170,4 +173,11 @@ body::before {
 
 @media only screen and (min-width: 1920px) {
     
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation: none ;
+        transition: none ;
+    }
 }

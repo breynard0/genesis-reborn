@@ -4,8 +4,8 @@
 
 @media (prefers-reduced-motion: reduce) {
     * {
-        animation: none !important;
-        transition: none !important;
+        animation: none ;
+        transition: none ;
     }
 }
 
@@ -13,40 +13,7 @@
     --follower-size: 50px;
 }
 
-@media only screen and (max-width: 600px) {
-    body {
-        background-color: black;
-    }
-    #angel-unwound {
-        display: none;
-    }
-}
 
-@media only screen and (min-width: 600px) {
-
-}
-
-@media only screen and (min-width: 768px) {
-
-}
-
-@media only screen and (min-width: 992px) {
-
-}
-
-@media only screen and (min-width: 1200px) {
-    * {
-        --follower-size: 100px;
-    }
-}
-
-@media only screen and (min-width: 1440px) {
-
-}
-
-@media only screen and (min-width: 1920px) {
-    
-}
 
 body::before {
     content: "";
@@ -146,4 +113,61 @@ body::before {
 }
 #footer p:hover {
     border-radius: 5%;
+}
+
+@media only screen and (max-width: 600px) {
+    /* phones, etc. */
+    body {
+        background-color: black;
+    }
+    #angel-unwound {
+        display: none;
+    }
+    #follower {
+        display: none;
+    }
+    #hc-flag {
+        transform-origin: top left;
+        transform: scale(0.2);
+    }
+    #genesis-logo {
+        left: 0 ;
+        top: 30% ;
+        width: 100% ;
+    }
+    #enter {
+        font-size: 3em;
+        width: 8ch;
+        height: 5ch;
+        left: 50%;
+    }
+    #enter p {
+        font-size: inherit;
+    }
+}
+
+@media only screen and (min-width: 600px) {
+
+}
+
+@media only screen and (min-width: 768px) {
+
+}
+
+@media only screen and (min-width: 992px) {
+
+}
+
+@media only screen and (min-width: 1200px) {
+    * {
+        --follower-size: 100px;
+    }
+}
+
+@media only screen and (min-width: 1440px) {
+
+}
+
+@media only screen and (min-width: 1920px) {
+    
 }

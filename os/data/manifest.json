@@ -61,6 +61,14 @@
       "styles": {}
     },
     {
+      "title": "Lil' CPU",
+      "iconurl": "assets/sim-icon.png",
+      "appSource": "https://computer-sim.breynard.net/",
+      "tooltip": "Watch simplified x86 CPU work",
+      "options": {},
+      "styles": {}
+    },
+    {
       "title": "lose me money",
       "iconurl": "assets/fuckme.png",
       "appSource": "https://forms.hackclub.com/bounty",
